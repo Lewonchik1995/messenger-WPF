@@ -26,19 +26,33 @@ namespace Messenger
 
         private void Create_Click(object sender, RoutedEventArgs e)
         {
-            ServerWindow.name = Name.Text.ToString();
-            ServerWindow serverWindow = new ServerWindow();
-            serverWindow.Show();
-            this.Close();
+            if (Name.Text != "")
+            {
+                ServerWindow.name = Name.Text.ToString();
+                ServerWindow serverWindow = new ServerWindow();
+                serverWindow.Show();
+                this.Close();
+            }
+            else
+            {
+                MessageBox.Show("Заполните имя пользователя!");
+            }
         }
 
         private void Connect_Click(object sender, RoutedEventArgs e)
         {
-            ClientWindow.ip  = IP.Text.ToString();
-            ClientWindow.name = Name.Text.ToString();
-            ClientWindow clientWindow = new ClientWindow();
-            clientWindow.Show();
-            this.Close();
+            if (Name.Text != "" && IP.Text != "")
+            {
+                ClientWindow.ip = IP.Text.ToString();
+                ClientWindow.name = Name.Text.ToString();
+                ClientWindow clientWindow = new ClientWindow();
+                clientWindow.Show();
+                this.Close();
+            }
+            else
+            {
+                MessageBox.Show("Имя пользователя и ip-адрес должны быть заполнены!");
+            }
         }
     }
 }

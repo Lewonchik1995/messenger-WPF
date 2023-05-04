@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
@@ -37,8 +38,22 @@ namespace Messenger
                 byte[] bytes = new byte[1024];
                 await server.ReceiveAsync(bytes, SocketFlags.None);
                 string message = Encoding.UTF8.GetString(bytes);
-
-                MessageListView.Items.Add(message);
+                int action = Convert.ToInt32(message.Substring(0, 1));
+                message = message.Substring(1, message.Length - 1);
+                switch (action)
+                {
+                    case 1:
+                        MessageListView.Items.Add(message);
+                        break;
+                    case 2:
+                        UsersList.Items.Clear();
+                        string[] userList = message.Split(';');
+                        foreach (string user in userList)
+                        {
+                            UsersList.Items.Add(user);
+                        }
+                        break;
+                }
             }
         }
 
@@ -55,9 +70,17 @@ namespace Messenger
 
         private void Send_Click(object sender, RoutedEventArgs e)
         {
-            SendMessage($"[{DateTime.Now}] [{name}]: {Message.Text}");
-            Message.Text = "";
+            if (Message.Text != "")
+            {
+                SendMessage($"[{DateTime.Now}] [{name}]: {Message.Text}");
+                Message.Text = "";
+            }
+            else
+            {
+                MessageBox.Show("Введите сообщение!");
+            }
         }
+
 
         private void Exit_Click(object sender, RoutedEventArgs e)
         {

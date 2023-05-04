@@ -32,6 +32,7 @@ namespace Messenger
             socket.Bind(ipPoint);
             socket.Listen(1000);
             clients.Add(socket, $"[{name}]");
+            logList.Add($"[{DateTime.Now}] \nНовый юзер: {name} ");
             UpdateUsers();
             ListenToClients();
         }
@@ -56,9 +57,19 @@ namespace Messenger
                 switch (action)
                 {
                     case 0:
+                        message = message.Substring(0, message.LastIndexOf(']')+1);
                         clients.Add(client, message);
                         UpdateUsers();
                         logList.Add($"[{DateTime.Now}] \nНовый юзер: {message} ");
+                        string allUsers = "";
+                        foreach (var item in clients)
+                        {
+                            allUsers += $"{item.Value};";
+                        }
+                        foreach (var item in clients)
+                        {
+                            SendUsers(item.Key, allUsers);
+                        }
 
                         break;
                     case 1:
@@ -75,7 +86,13 @@ namespace Messenger
 
         private async Task SendMessage(Socket client, string message)
         {
-            byte[] bytes = Encoding.UTF8.GetBytes(message);
+            byte[] bytes = Encoding.UTF8.GetBytes($"1{message}");
+            await client.SendAsync(bytes, SocketFlags.None);
+        }
+
+        private async Task SendUsers(Socket client, string allUsers)
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes($"2{allUsers}");
             await client.SendAsync(bytes, SocketFlags.None);
         }
 
@@ -97,12 +114,19 @@ namespace Messenger
 
         private void Send_Click(object sender, RoutedEventArgs e)
         {
-            MessageListView.Items.Add($"[{DateTime.Now}] [{name}]: {Message.Text}");
-            foreach (var item in clients)
+            if (Message.Text != "")
             {
-                SendMessage(item.Key, $"[{DateTime.Now}] [{name}]: {Message.Text}");
+                MessageListView.Items.Add($"[{DateTime.Now}] [{name}]: {Message.Text}");
+                foreach (var item in clients)
+                {
+                    SendMessage(item.Key, $"[{DateTime.Now}] [{name}]: {Message.Text}");
+                }
+                Message.Text = "";
             }
-            Message.Text = "";
+            else
+            {
+                MessageBox.Show("Введите сообщение!");
+            }
         }
 
         private void Exit_Click(object sender, RoutedEventArgs e)

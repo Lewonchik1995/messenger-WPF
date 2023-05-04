@@ -29,8 +29,8 @@
             Margin="10 0 10 0" 
             VerticalAlignment="Center"
             Style="{StaticResource MaterialDesignFilledTextBox}"
-            AcceptsReturn="True"
-            TextWrapping="Wrap"
+            AcceptsReturn="False"
+            TextWrapping="NoWrap"
             materialDesign:HintAssist.Hint="Введите свое имя пользователя" />
         <Button x:Name="Create"
             Grid.Row="2" Margin="10"
@@ -47,8 +47,8 @@
             Margin="10 0 10 10" 
             VerticalAlignment="Center"
             Style="{StaticResource MaterialDesignFilledTextBox}"
-            AcceptsReturn="True"
-            TextWrapping="Wrap"
+            AcceptsReturn="False"
+            TextWrapping="NoWrap"
             materialDesign:HintAssist.Hint="IP адрес чата" />
     </Grid>
 </Window>

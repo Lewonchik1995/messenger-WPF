@@ -28,7 +28,7 @@
             HorizontalAlignment="Center" VerticalAlignment="Center"
             FontSize="16"
             Text="Пользователи:"/>
-        <ListView Grid.Row="1" Grid.Column="0" Grid.RowSpan="2"/>
+        <ListView x:Name="UsersList" Grid.Row="1" Grid.Column="0" Grid.RowSpan="2"/>
         <ListView x:Name="MessageListView" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Grid.RowSpan="2"/>
         <Button x:Name="Send"
             Grid.Row="2" Grid.Column="3"
