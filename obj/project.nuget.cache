@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "mTs/akklBfDxfP1YY7Z3/CSzSYTR18jrnEez1NTehcjUMbDgE+zFa8RVo4r9PjxKdI0T5s9gJOnBNRlfgFEenQ==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\AlexeyProtsenko\\Desktop\\Основы алгоритмизации и программирования\\С#\\Messenger\\Messenger.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\AlexeyProtsenko\\.nuget\\packages\\materialdesigncolors\\2.1.2\\materialdesigncolors.2.1.2.nupkg.sha512",
+    "C:\\Users\\AlexeyProtsenko\\.nuget\\packages\\materialdesignthemes\\4.8.0\\materialdesignthemes.4.8.0.nupkg.sha512",
+    "C:\\Users\\AlexeyProtsenko\\.nuget\\packages\\microsoft.xaml.behaviors.wpf\\1.1.39\\microsoft.xaml.behaviors.wpf.1.1.39.nupkg.sha512"
+  ],
+  "logs": []
+}
