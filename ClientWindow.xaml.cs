@@ -1,42 +1,30 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace Messenger
 {
     public partial class ClientWindow : Window
     {
-        public static string ip;
-        public static string name;
-        private Socket server;
+        private CancellationTokenSource isWorking;
         public ClientWindow()
         {
             InitializeComponent();
 
-            server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            server.Connect(ip, 8888);
-            SendName(name);
-            ReceiveMessage();
+            TcpClient.Client();
+            isWorking = new CancellationTokenSource();
+            ReceiveMessage(isWorking.Token);
         }
 
-        private async Task ReceiveMessage()
+        private async Task ReceiveMessage(CancellationToken token)
         {
-            while (true)
+            while (!token.IsCancellationRequested)
             {
                 byte[] bytes = new byte[1024];
-                await server.ReceiveAsync(bytes, SocketFlags.None);
+                await TcpClient.server.ReceiveAsync(bytes, SocketFlags.None);
                 string message = Encoding.UTF8.GetString(bytes);
                 int action = Convert.ToInt32(message.Substring(0, 1));
                 message = message.Substring(1, message.Length - 1);
@@ -57,36 +45,46 @@ namespace Messenger
             }
         }
 
-        private async Task SendName(string name)
-        {
-            byte[] bytes = Encoding.UTF8.GetBytes($"0[{name}]");
-            await server.SendAsync(bytes, SocketFlags.None);
-        }
-        private async Task SendMessage(string message)
-        {
-            byte[] bytes = Encoding.UTF8.GetBytes($"1{message}");
-            await server.SendAsync(bytes, SocketFlags.None);
-        }
-
         private void Send_Click(object sender, RoutedEventArgs e)
         {
-            if (Message.Text != "")
+            if (Message.Text == "/disconnect")
             {
-                SendMessage($"[{DateTime.Now}] [{name}]: {Message.Text}");
-                Message.Text = "";
+                ExitAction();
             }
             else
             {
-                MessageBox.Show("Введите сообщение!");
+                if (Message.Text != "")
+                {
+                    TcpClient.SendMessage($"[{DateTime.Now}] [{TcpClient.name}]: {Message.Text}");
+                    Message.Text = "";
+                }
+                else
+                {
+                    MessageBox.Show("Введите сообщение!");
+                }
             }
         }
 
 
         private void Exit_Click(object sender, RoutedEventArgs e)
         {
+            ExitAction();
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
             MainWindow mainWindow = new MainWindow();
             mainWindow.Show();
-            server.Disconnect(true);
+            isWorking.Cancel();
+            TcpClient.server.Close();
+        }
+
+        private void ExitAction()
+        {
+            MainWindow mainWindow = new MainWindow();
+            mainWindow.Show();
+            isWorking.Cancel();
+            TcpClient.server.Close();
             this.Close();
         }
     }

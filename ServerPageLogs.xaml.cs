@@ -20,7 +20,7 @@ namespace Messenger
         public ServerPageLogs()
         {
             InitializeComponent();
-            foreach (var item in ServerWindow.logList)
+            foreach (var item in TcpServer.logList)
             {
                 LogListView.Items.Add(item);
             }

@@ -13,34 +13,29 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Threading;
 
 namespace Messenger
 {
     public partial class ServerWindow : Window
     {
-        private Socket socket;
-        public static string name;
-        private Dictionary<Socket, string> clients = new Dictionary<Socket, string>();
-        public static List<string> logList = new List<string>();
+        private CancellationTokenSource isWorking;
         private bool isPageOpen = false;
         public ServerWindow()
         {
             InitializeComponent();
 
-            IPEndPoint ipPoint = new IPEndPoint(IPAddress.Any, 8888);
-            socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            socket.Bind(ipPoint);
-            socket.Listen(1000);
-            clients.Add(socket, $"[{name}]");
-            logList.Add($"[{DateTime.Now}] \nНовый юзер: {name} ");
+            TcpServer.Server();
+            isWorking = new CancellationTokenSource();
             UpdateUsers();
-            ListenToClients();
+            ListenToClients(isWorking.Token);
         }
-        private async Task ListenToClients()
+
+        private async Task ListenToClients(CancellationToken token)
         {
-            while (true)
+            while (!token.IsCancellationRequested)
             {
-                var client = await socket.AcceptAsync();
+                var client = await TcpServer.socket.AcceptAsync();
                 ReceiveMessage(client);
             }
         }
@@ -58,42 +53,30 @@ namespace Messenger
                 {
                     case 0:
                         message = message.Substring(0, message.LastIndexOf(']')+1);
-                        clients.Add(client, message);
+                        TcpServer.clients.Add(client, message);
                         UpdateUsers();
-                        logList.Add($"[{DateTime.Now}] \nНовый юзер: {message} ");
+                        TcpServer.logList.Add($"[{DateTime.Now}] \nНовый юзер: {message} ");
                         string allUsers = "";
-                        foreach (var item in clients)
+                        foreach (var item in TcpServer.clients)
                         {
                             allUsers += $"{item.Value};";
                         }
-                        foreach (var item in clients)
+                        foreach (var item in TcpServer.clients)
                         {
-                            SendUsers(item.Key, allUsers);
+                            TcpServer.SendUsers(item.Key, allUsers);
                         }
 
                         break;
                     case 1:
                         MessageListView.Items.Add(message);
 
-                        foreach (var item in clients)
+                        foreach (var item in TcpServer.clients)
                         {
-                            SendMessage(item.Key, message);
+                            TcpServer.SendMessage(item.Key, message);
                         }
                         break;
                 }
             }
-        }
-
-        private async Task SendMessage(Socket client, string message)
-        {
-            byte[] bytes = Encoding.UTF8.GetBytes($"1{message}");
-            await client.SendAsync(bytes, SocketFlags.None);
-        }
-
-        private async Task SendUsers(Socket client, string allUsers)
-        {
-            byte[] bytes = Encoding.UTF8.GetBytes($"2{allUsers}");
-            await client.SendAsync(bytes, SocketFlags.None);
         }
 
         private void ShowLogs_Click(object sender, RoutedEventArgs e)
@@ -114,36 +97,61 @@ namespace Messenger
 
         private void Send_Click(object sender, RoutedEventArgs e)
         {
-            if (Message.Text != "")
+            if (Message.Text == "/disconnect")
             {
-                MessageListView.Items.Add($"[{DateTime.Now}] [{name}]: {Message.Text}");
-                foreach (var item in clients)
-                {
-                    SendMessage(item.Key, $"[{DateTime.Now}] [{name}]: {Message.Text}");
-                }
-                Message.Text = "";
+                ExitAction();
             }
-            else
+            else 
             {
-                MessageBox.Show("Введите сообщение!");
+                if (Message.Text != "")
+                {
+                    MessageListView.Items.Add($"[{DateTime.Now}] [{TcpServer.name}]: {Message.Text}");
+                    foreach (var item in TcpServer.clients)
+                    {
+                        TcpServer.SendMessage(item.Key, $"[{DateTime.Now}] [{TcpServer.name}]: {Message.Text}");
+                    }
+                    Message.Text = "";
+                }
+                else
+                {
+                    MessageBox.Show("Введите сообщение!");
+                }
             }
         }
 
         private void Exit_Click(object sender, RoutedEventArgs e)
         {
-            MainWindow mainWindow = new MainWindow();
-            mainWindow.Show();
-            socket.Disconnect(true);
-            this.Close();
+            ExitAction();
         }
 
         private void UpdateUsers()
         {
             UsersList.Items.Clear();
-            foreach (var item in clients)
+            foreach (var item in TcpServer.clients)
             {
                 UsersList.Items.Add(item.Value);
             }
+        }
+
+        private void ExitAction()
+        {
+            MainWindow mainWindow = new MainWindow();
+            mainWindow.Show();
+            isWorking.Cancel();
+            TcpServer.socket.Close();
+            TcpServer.clients = new Dictionary<Socket, string>();
+            TcpServer.logList = new List<string>();
+            this.Close();
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            MainWindow mainWindow = new MainWindow();
+            mainWindow.Show();
+            isWorking.Cancel();
+            TcpServer.socket.Close();
+            TcpServer.clients = new Dictionary<Socket, string>();
+            TcpServer.logList = new List<string>();
         }
     }
 }

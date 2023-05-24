@@ -28,7 +28,7 @@ namespace Messenger
         {
             if (Name.Text != "")
             {
-                ServerWindow.name = Name.Text.ToString();
+                TcpServer.name = Name.Text.ToString();
                 ServerWindow serverWindow = new ServerWindow();
                 serverWindow.Show();
                 this.Close();
@@ -43,8 +43,8 @@ namespace Messenger
         {
             if (Name.Text != "" && IP.Text != "")
             {
-                ClientWindow.ip = IP.Text.ToString();
-                ClientWindow.name = Name.Text.ToString();
+                TcpClient.ip = IP.Text.ToString();
+                TcpClient.name = Name.Text.ToString();
                 ClientWindow clientWindow = new ClientWindow();
                 clientWindow.Show();
                 this.Close();
